@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Client Retention Automation — System Explainer</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --secondary: #06b6d4;
+      --accent: #f59e0b;
+      --success: #10b981;
+      --danger: #ef4444;
+      --dark: #1e1b4b;
+      --gray-50: #f8fafc;
+      --gray-100: #f1f5f9;
+      --gray-200: #e2e8f0;
+      --gray-500: #64748b;
+      --gray-700: #334155;
+      --gray-900: #0f172a;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      color: var(--gray-900);
+      line-height: 1.7;
+      background: white;
+    }
+
+    /* ---- Cover Page ---- */
+    .cover {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, var(--dark) 0%, #312e81 50%, var(--primary) 100%);
+      color: white;
+      text-align: center;
+      padding: 60px;
+      page-break-after: always;
+    }
+    .cover-icon { font-size: 64px; margin-bottom: 30px; }
+    .cover h1 {
+      font-size: 48px;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+    .cover .subtitle {
+      font-size: 22px;
+      font-weight: 300;
+      opacity: 0.85;
+      max-width: 600px;
+      margin-bottom: 40px;
+    }
+    .cover .meta {
+      font-size: 14px;
+      opacity: 0.6;
+      margin-top: 60px;
+    }
+    .cover .badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 8px;
+      padding: 10px 24px;
+      font-size: 14px;
+      font-weight: 500;
+      margin-top: 20px;
+    }
+
+    /* ---- Page Layout ---- */
+    .page {
+      padding: 60px 70px;
+      page-break-after: always;
+      min-height: 100vh;
+    }
+    .page:last-child { page-break-after: avoid; }
+
+    h2 {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 8px;
+      padding-bottom: 12px;
+      border-bottom: 3px solid var(--primary);
+      display: inline-block;
+    }
+    h2 + .section-desc {
+      font-size: 16px;
+      color: var(--gray-500);
+      margin-bottom: 32px;
+      margin-top: 8px;
+    }
+    h3 {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--gray-700);
+      margin: 28px 0 12px;
+    }
+    p { margin-bottom: 14px; font-size: 15px; }
+
+    /* ---- TOC ---- */
+    .toc { margin-top: 24px; }
+    .toc-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--gray-200);
+      font-size: 16px;
+    }
+    .toc-item span:first-child { font-weight: 500; }
+    .toc-num {
+      display: inline-block;
+      width: 32px;
+      height: 32px;
+      line-height: 32px;
+      text-align: center;
+      background: var(--primary);
+      color: white;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      margin-right: 12px;
+    }
+
+    /* ---- Cards ---- */
+    .card-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 24px 0;
+    }
+    .card {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .card-icon { font-size: 28px; margin-bottom: 10px; }
+    .card h4 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--gray-900);
+    }
+    .card p { font-size: 14px; color: var(--gray-500); margin: 0; }
+
+    /* ---- Stat Row ---- */
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin: 28px 0;
+    }
+    .stat-box {
+      text-align: center;
+      background: var(--gray-50);
+      border-radius: 12px;
+      padding: 20px 12px;
+      border: 1px solid var(--gray-200);
+    }
+    .stat-box .number {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1;
+    }
+    .stat-box .label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 6px;
+    }
+
+    /* ---- Flow Diagram ---- */
+    .flow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin: 32px 0;
+      flex-wrap: wrap;
+    }
+    .flow-step {
+      background: white;
+      border: 2px solid var(--primary);
+      border-radius: 12px;
+      padding: 16px 20px;
+      text-align: center;
+      min-width: 140px;
+    }
+    .flow-step .step-num {
+      display: inline-block;
+      background: var(--primary);
+      color: white;
+      width: 24px;
+      height: 24px;
+      line-height: 24px;
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .flow-step .step-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--dark);
+    }
+    .flow-step .step-desc {
+      font-size: 11px;
+      color: var(--gray-500);
+      margin-top: 4px;
+    }
+    .flow-arrow {
+      font-size: 24px;
+      color: var(--primary);
+      margin: 0 6px;
+    }
+
+    /* ---- Table ---- */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 14px;
+    }
+    th {
+      background: var(--dark);
+      color: white;
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 600;
+    }
+    th:first-child { border-radius: 8px 0 0 0; }
+    th:last-child { border-radius: 0 8px 0 0; }
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--gray-200);
+    }
+    tr:nth-child(even) { background: var(--gray-50); }
+
+    /* ---- Code Block ---- */
+    .code-block {
+      background: var(--gray-900);
+      color: #e2e8f0;
+      border-radius: 10px;
+      padding: 20px 24px;
+      font-family: 'Fira Code', 'SF Mono', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      margin: 16px 0;
+      overflow-x: auto;
+    }
+    .code-block .comment { color: #64748b; }
+    .code-block .cmd { color: #22d3ee; }
+    .code-block .flag { color: #a78bfa; }
+
+    /* ---- Highlight Box ---- */
+    .highlight {
+      background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+      border-left: 4px solid var(--primary);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 24px 0;
+    }
+    .highlight p { margin: 0; font-size: 15px; }
+    .highlight strong { color: var(--primary-dark); }
+
+    /* ---- List ---- */
+    ul.check-list {
+      list-style: none;
+      padding: 0;
+    }
+    ul.check-list li {
+      padding: 8px 0 8px 32px;
+      position: relative;
+      font-size: 15px;
+    }
+    ul.check-list li::before {
+      content: '\2713';
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    /* ---- Architecture ---- */
+    .arch-diagram {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: 16px;
+      padding: 32px;
+      margin: 24px 0;
+      text-align: center;
+    }
+    .arch-layer {
+      background: white;
+      border: 2px solid var(--gray-200);
+      border-radius: 10px;
+      padding: 14px 20px;
+      margin: 8px auto;
+      max-width: 500px;
+      font-weight: 500;
+      font-size: 14px;
+      position: relative;
+    }
+    .arch-layer.primary { border-color: var(--primary); background: #eef2ff; }
+    .arch-layer.secondary { border-color: var(--secondary); background: #ecfeff; }
+    .arch-layer.accent { border-color: var(--accent); background: #fffbeb; }
+    .arch-layer.success { border-color: var(--success); background: #ecfdf5; }
+    .arch-arrow {
+      text-align: center;
+      color: var(--gray-500);
+      font-size: 18px;
+      margin: 4px 0;
+    }
+
+    /* ---- Footer ---- */
+    .page-footer {
+      position: fixed;
+      bottom: 20px;
+      left: 70px;
+      right: 70px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--gray-500);
+    }
+
+    /* ---- Responsive adjustments for PDF ---- */
+    @media print {
+      .page { padding: 40px 50px; }
+      .cover { padding: 40px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== COVER PAGE ==================== -->
+  <div class="cover">
+    <div class="cover-icon">&#x1F3CB;&#xFE0F;</div>
+    <h1>Client Retention<br>Automation System</h1>
+    <div class="subtitle">
+      An intelligent platform that automatically re-engages fitness studio clients
+      through personalized follow-up emails and one-click booking links.
+    </div>
+    <div class="badge">Built for FitLife Studio &mdash; Fitness Industry</div>
+    <div class="meta">
+      System Documentation &amp; Technical Explainer<br>
+      March 2026 &bull; Version 1.0
+    </div>
+  </div>
+
+  <!-- ==================== TABLE OF CONTENTS ==================== -->
+  <div class="page">
+    <h2>Table of Contents</h2>
+    <div class="toc" style="margin-top: 32px;">
+      <div class="toc-item"><span><span class="toc-num">1</span> The Problem</span></div>
+      <div class="toc-item"><span><span class="toc-num">2</span> The Solution — How It Works</span></div>
+      <div class="toc-item"><span><span class="toc-num">3</span> System Architecture</span></div>
+      <div class="toc-item"><span><span class="toc-num">4</span> Core Features</span></div>
+      <div class="toc-item"><span><span class="toc-num">5</span> The Retention Engine</span></div>
+      <div class="toc-item"><span><span class="toc-num">6</span> Dashboard Overview</span></div>
+      <div class="toc-item"><span><span class="toc-num">7</span> API Reference</span></div>
+      <div class="toc-item"><span><span class="toc-num">8</span> Demo Walkthrough</span></div>
+      <div class="toc-item"><span><span class="toc-num">9</span> Tech Stack &amp; Setup</span></div>
+      <div class="toc-item"><span><span class="toc-num">10</span> Future Roadmap</span></div>
+    </div>
+  </div>
+
+  <!-- ==================== SECTION 1: THE PROBLEM ==================== -->
+  <div class="page">
+    <h2>1. The Problem</h2>
+    <p class="section-desc">Why fitness studios lose clients — and revenue — silently</p>
+
+    <p>
+      Fitness studios face a critical challenge: <strong>client drop-off is invisible</strong>.
+      When a client stops booking sessions, there's no alarm bell. Days turn into weeks,
+      weeks into months, and by the time anyone notices, the client has moved on.
+    </p>
+
+    <div class="stat-row">
+      <div class="stat-box">
+        <div class="number">67%</div>
+        <div class="label">Clients who lapse<br>never return</div>
+      </div>
+      <div class="stat-box">
+        <div class="number">3-7</div>
+        <div class="label">Day window to<br>re-engage</div>
+      </div>
+      <div class="stat-box">
+        <div class="number">5x</div>
+        <div class="label">Cheaper to retain<br>than acquire</div>
+      </div>
+      <div class="stat-box">
+        <div class="number">$0</div>
+        <div class="label">Revenue from a<br>lapsed client</div>
+      </div>
+    </div>
+
+    <h3>The Manual Approach Fails</h3>
+    <p>
+      Most studios rely on staff to manually track who hasn't visited recently and send follow-up
+      messages. This approach breaks down because:
+    </p>
+    <ul class="check-list" style="margin-top: 12px;">
+      <li>Staff are busy with in-person clients and can't track every inactive member</li>
+      <li>Follow-ups are inconsistent — some clients get contacted, others slip through</li>
+      <li>No personalization — generic "we miss you" messages feel impersonal</li>
+      <li>No direct booking link — clients have to navigate the website themselves</li>
+      <li>No visibility into which clients are at risk until it's too late</li>
+    </ul>
+
+    <div class="highlight">
+      <p>
+        <strong>The core insight:</strong> The window to re-engage a lapsed client is narrow.
+        A follow-up on day 3 has 4x the success rate of a follow-up on day 30.
+        Automation ensures no client falls through the cracks.
+      </p>
+    </div>
+  </div>
+
+  <!-- ==================== SECTION 2: THE SOLUTION ==================== -->
+  <div class="page">
+    <h2>2. The Solution</h2>
+    <p class="section-desc">Automated retention that works while you train</p>
+
+    <p>
+      The Client Retention Automation System continuously monitors your client roster and
+      automatically sends personalized follow-up emails at the right intervals — each with
+      a direct booking link that lets clients schedule their next session in one click.
+    </p>
+
+    <h3>How It Works — The Core Flow</h3>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="step-num">1</div>
+        <div class="step-title">Client Completes<br>a Session</div>
+        <div class="step-desc">System records the date</div>
+      </div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step">
+        <div class="step-num">2</div>
+        <div class="step-title">Time Passes<br>Without Return</div>
+        <div class="step-desc">Engine monitors daily</div>
+      </div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step">
+        <div class="step-num">3</div>
+        <div class="step-title">Rule Triggers<br>at Day N</div>
+        <div class="step-desc">e.g. 3, 7, 14, 30 days</div>
+      </div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step">
+        <div class="step-num">4</div>
+        <div class="step-title">Personalized Email<br>Sent Automatically</div>
+        <div class="step-desc">With booking link</div>
+      </div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step">
+        <div class="step-num">5</div>
+        <div class="step-title">Client Books<br>Next Session</div>
+        <div class="step-desc">One-click booking</div>
+      </div>
+    </div>
+
+    <h3>What Makes It Different</h3>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">&#x23F0;</div>
+        <h4>Time-Aware Triggers</h4>
+        <p>Four configurable rules fire at exactly the right intervals — day 3 (gentle nudge), day 7 (check-in), day 14 (special offer), day 30 (win-back).</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#x1F3AF;</div>
+        <h4>Personalized Messages</h4>
+        <p>Each email uses the client's name, session history, and studio branding. Templates use {{placeholder}} variables for dynamic content.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#x1F517;</div>
+        <h4>One-Click Booking Links</h4>
+        <p>Every email contains a unique, time-limited booking link. Clients pick a date and session type — done. No login required.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#x1F4CA;</div>
+        <h4>Real-Time Dashboard</h4>
+        <p>See at-risk clients, email delivery status, booking conversion rates, and follow-up activity — all in one professional interface.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SECTION 3: ARCHITECTURE ==================== -->
+  <div class="page">
+    <h2>3. System Architecture</h2>
+    <p class="section-desc">Clean, modular design built for reliability</p>
+
+    <div class="arch-diagram">
+      <div class="arch-layer primary">
+        <strong>Dashboard UI</strong> — Single-page app (Tailwind CSS + Vanilla JS)
+      </div>
+      <div class="arch-arrow">&#x2193;</div>
+      <div class="arch-layer secondary">
+        <strong>REST API Layer</strong> — Express.js with 17+ endpoints across 6 route modules
+      </div>
+      <div class="arch-arrow">&#x2193;</div>
+      <div class="arch-layer accent">
+        <strong>Service Layer</strong> — Retention Engine &bull; Email Service &bull; Booking Service &bull; Scheduler
+      </div>
+      <div class="arch-arrow">&#x2193;</div>
+      <div class="arch-layer success">
+        <strong>Data Layer</strong> — SQLite (better-sqlite3) &bull; 6 tables &bull; Prepared statements
+      </div>
+    </div>
+
+    <h3>Database Schema</h3>
+    <table>
+      <tr>
+        <th>Table</th>
+        <th>Purpose</th>
+        <th>Key Fields</th>
+      </tr>
+      <tr>
+        <td><strong>clients</strong></td>
+        <td>Client roster with contact info and status</td>
+        <td>name, email, phone, status, membership_type, last_session_at</td>
+      </tr>
+      <tr>
+        <td><strong>sessions</strong></td>
+        <td>Every training session logged</td>
+        <td>client_id, session_date, session_type, duration_minutes, completed</td>
+      </tr>
+      <tr>
+        <td><strong>follow_ups</strong></td>
+        <td>Every automated outreach record</td>
+        <td>client_id, rule_id, status (pending/sent/failed), sent_at</td>
+      </tr>
+      <tr>
+        <td><strong>bookings</strong></td>
+        <td>Unique booking links with token tracking</td>
+        <td>client_id, token (UUID), expires_at, used (0/1)</td>
+      </tr>
+      <tr>
+        <td><strong>retention_rules</strong></td>
+        <td>Configurable follow-up trigger rules</td>
+        <td>name, trigger_days, priority, enabled, template_id</td>
+      </tr>
+      <tr>
+        <td><strong>email_templates</strong></td>
+        <td>Email content with dynamic placeholders</td>
+        <td>name, subject, body (with {{variables}})</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ==================== SECTION 4: CORE FEATURES ==================== -->
+  <div class="page">
+    <h2>4. Core Features</h2>
+    <p class="section-desc">Everything a studio owner needs to retain clients automatically</p>
+
+    <h3>Client Management</h3>
+    <p>
+      Add clients via the dashboard or API. Each client record tracks name, email, phone,
+      membership type (monthly/annual/drop-in), join date, and current status (active/at-risk/inactive).
+      The system automatically updates a client's status based on session activity.
+    </p>
+
+    <h3>Session Tracking</h3>
+    <p>
+      Every completed session is logged with date, type (Yoga, HIIT, Pilates, Strength, etc.),
+      duration, and notes. The system uses the most recent completed session to calculate
+      "days since last visit" — the key metric that drives retention triggers.
+    </p>
+
+    <h3>Automated Follow-Up Emails</h3>
+    <p>
+      The retention engine runs on a schedule (hourly in production, every 10 seconds in demo mode).
+      It scans all active clients, checks if any match a retention rule based on their days-since-last-session,
+      and sends personalized emails automatically.
+    </p>
+    <p>Each email includes:</p>
+    <ul class="check-list">
+      <li>Client's first name and personalized greeting</li>
+      <li>Studio branding (name, colors, professional layout)</li>
+      <li>A clear call-to-action button with a unique booking link</li>
+      <li>The booking link expires after 72 hours for urgency</li>
+      <li>Professional HTML layout with responsive design</li>
+    </ul>
+
+    <h3>One-Click Booking</h3>
+    <p>
+      When a client clicks their booking link, they see a branded booking page where they can:
+      select a session date, choose a session type, and confirm — all without logging in.
+      The system creates the session, marks the booking as used, and updates the client's
+      last_session_at timestamp.
+    </p>
+
+    <h3>Duplicate Prevention</h3>
+    <p>
+      Smart deduplication ensures a client won't receive the same follow-up rule twice.
+      If a client already has a pending follow-up for a given rule, the system skips it.
+      This prevents email fatigue and keeps communication respectful.
+    </p>
+  </div>
+
+  <!-- ==================== SECTION 5: RETENTION ENGINE ==================== -->
+  <div class="page">
+    <h2>5. The Retention Engine</h2>
+    <p class="section-desc">The brain of the system — rule-based, configurable, and smart</p>
+
+    <h3>Default Retention Rules</h3>
+    <table>
+      <tr>
+        <th>Rule</th>
+        <th>Trigger</th>
+        <th>Priority</th>
+        <th>Email Tone</th>
+      </tr>
+      <tr>
+        <td><strong>Gentle Nudge</strong></td>
+        <td>3 days since last session</td>
+        <td>Low</td>
+        <td>Friendly check-in, "Ready for your next session?"</td>
+      </tr>
+      <tr>
+        <td><strong>Check-In</strong></td>
+        <td>7 days since last session</td>
+        <td>Medium</td>
+        <td>Concerned, "We've noticed you haven't visited"</td>
+      </tr>
+      <tr>
+        <td><strong>Special Offer</strong></td>
+        <td>14 days since last session</td>
+        <td>High</td>
+        <td>Incentive-driven, "Special offer just for you"</td>
+      </tr>
+      <tr>
+        <td><strong>Win-Back</strong></td>
+        <td>30 days since last session</td>
+        <td>Critical</td>
+        <td>Re-engagement, "We miss you at the studio"</td>
+      </tr>
+    </table>
+
+    <h3>Engine Logic (Simplified)</h3>
+    <div class="code-block">
+      <span class="comment">// Every hour (or 10s in demo mode), the engine:</span><br><br>
+      <span class="cmd">1.</span> Queries all active clients with their days_since_last_session<br>
+      <span class="cmd">2.</span> For each client, finds matching retention rules (days_since >= trigger_days)<br>
+      <span class="cmd">3.</span> Picks the highest-priority matching rule<br>
+      <span class="cmd">4.</span> Checks if a follow-up already exists for this client + rule<br>
+      <span class="cmd">5.</span> If no duplicate: creates booking link + sends email + records follow-up<br>
+      <span class="cmd">6.</span> Logs everything for the dashboard to display
+    </div>
+
+    <h3>Email Template System</h3>
+    <p>
+      Templates use <code>{{placeholder}}</code> syntax for dynamic content. Available variables:
+    </p>
+    <table>
+      <tr><th>Variable</th><th>Value</th></tr>
+      <tr><td><code>{{name}}</code></td><td>Client's full name</td></tr>
+      <tr><td><code>{{first_name}}</code></td><td>Client's first name</td></tr>
+      <tr><td><code>{{email}}</code></td><td>Client's email address</td></tr>
+      <tr><td><code>{{days_since}}</code></td><td>Days since last session</td></tr>
+      <tr><td><code>{{booking_link}}</code></td><td>Unique booking URL</td></tr>
+      <tr><td><code>{{studio_name}}</code></td><td>Studio name from config</td></tr>
+    </table>
+  </div>
+
+  <!-- ==================== SECTION 6: DASHBOARD ==================== -->
+  <div class="page">
+    <h2>6. Dashboard Overview</h2>
+    <p class="section-desc">A professional SaaS-style control center for studio owners</p>
+
+    <p>
+      The dashboard is a single-page web application accessible at <code>http://localhost:3000</code>.
+      It provides real-time visibility into client activity, follow-up status, and retention metrics.
+    </p>
+
+    <h3>Dashboard Sections</h3>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">&#x1F4CA;</div>
+        <h4>Stats Overview</h4>
+        <p>5 key metrics at a glance: total clients, active clients, at-risk count, follow-ups sent, and booking conversion rate.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#x26A0;&#xFE0F;</div>
+        <h4>At-Risk Clients</h4>
+        <p>Highlighted panel showing clients who haven't booked recently, sorted by days since last session. Quick actions: record session, create booking link.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#x1F465;</div>
+        <h4>Client Management</h4>
+        <p>Full client table with search and filter. Click any client to see their complete session history, follow-up timeline, and quick actions.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#x1F4E7;</div>
+        <h4>Follow-Up Activity</h4>
+        <p>Live feed of all follow-up emails — pending, sent, and failed. Each entry links to the Ethereal email preview for verification.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#x2699;&#xFE0F;</div>
+        <h4>Retention Rules</h4>
+        <p>View and toggle retention rules. Visual funnel showing how many clients are at each stage (3-day, 7-day, 14-day, 30-day).</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#x1F3AE;</div>
+        <h4>Demo Controls</h4>
+        <p>Time acceleration panel: advance the clock by N days to simulate client lapse. Trigger manual retention checks. View all sent email previews. Reset demo data.</p>
+      </div>
+    </div>
+
+    <h3>Interactive Features</h3>
+    <ul class="check-list">
+      <li><strong>Add Client</strong> — Form modal to register new clients with all fields</li>
+      <li><strong>Record Session</strong> — Quick-action button on any client to log a new session</li>
+      <li><strong>Create Booking Link</strong> — Generate a unique booking URL for any client</li>
+      <li><strong>Toggle Rules</strong> — Enable/disable retention rules with one click</li>
+      <li><strong>Auto-Refresh</strong> — Dashboard updates every 5 seconds automatically</li>
+      <li><strong>Toast Notifications</strong> — Success/error feedback for every action</li>
+    </ul>
+  </div>
+
+  <!-- ==================== SECTION 7: API REFERENCE ==================== -->
+  <div class="page">
+    <h2>7. API Reference</h2>
+    <p class="section-desc">RESTful API with 17+ endpoints across 6 modules</p>
+
+    <table>
+      <tr>
+        <th>Method</th>
+        <th>Endpoint</th>
+        <th>Description</th>
+      </tr>
+      <tr><td colspan="3" style="background: var(--primary); color: white; font-weight: 600;">Clients</td></tr>
+      <tr><td>GET</td><td>/api/clients</td><td>List all clients</td></tr>
+      <tr><td>GET</td><td>/api/clients/:id</td><td>Get client details</td></tr>
+      <tr><td>POST</td><td>/api/clients</td><td>Add a new client</td></tr>
+      <tr><td>GET</td><td>/api/clients/:id/sessions</td><td>Client's session history</td></tr>
+      <tr><td>GET</td><td>/api/clients/:id/follow-ups</td><td>Client's follow-up history</td></tr>
+
+      <tr><td colspan="3" style="background: var(--secondary); color: white; font-weight: 600;">Sessions</td></tr>
+      <tr><td>GET</td><td>/api/sessions</td><td>List all sessions</td></tr>
+      <tr><td>POST</td><td>/api/sessions</td><td>Record a new session</td></tr>
+      <tr><td>POST</td><td>/api/sessions/:id/complete</td><td>Mark session as completed</td></tr>
+
+      <tr><td colspan="3" style="background: var(--accent); color: white; font-weight: 600;">Follow-Ups</td></tr>
+      <tr><td>GET</td><td>/api/follow-ups</td><td>List all follow-ups</td></tr>
+      <tr><td>GET</td><td>/api/follow-ups/pending</td><td>Pending follow-ups only</td></tr>
+      <tr><td>POST</td><td>/api/follow-ups/trigger</td><td>Manually trigger retention check</td></tr>
+
+      <tr><td colspan="3" style="background: var(--success); color: white; font-weight: 600;">Bookings</td></tr>
+      <tr><td>GET</td><td>/api/bookings</td><td>List all bookings</td></tr>
+      <tr><td>GET</td><td>/api/bookings/:token</td><td>Get booking by token</td></tr>
+      <tr><td>POST</td><td>/api/bookings/create/:clientId</td><td>Create booking link</td></tr>
+      <tr><td>POST</td><td>/api/bookings/:token/confirm</td><td>Confirm a booking</td></tr>
+
+      <tr><td colspan="3" style="background: var(--gray-700); color: white; font-weight: 600;">Dashboard</td></tr>
+      <tr><td>GET</td><td>/api/dashboard/stats</td><td>Aggregated metrics</td></tr>
+      <tr><td>GET</td><td>/api/dashboard/at-risk</td><td>At-risk client list</td></tr>
+      <tr><td>GET</td><td>/api/dashboard/rules</td><td>Retention rules</td></tr>
+    </table>
+
+    <p style="margin-top: 16px;">
+      All endpoints return a consistent <code>{ success: true, data: ... }</code> response envelope.
+      Errors return <code>{ success: false, error: "message" }</code> with appropriate HTTP status codes.
+    </p>
+  </div>
+
+  <!-- ==================== SECTION 8: DEMO WALKTHROUGH ==================== -->
+  <div class="page">
+    <h2>8. Demo Walkthrough</h2>
+    <p class="section-desc">Step-by-step guide to showcase the system</p>
+
+    <h3>Setup (30 seconds)</h3>
+    <div class="code-block">
+      <span class="comment"># Install dependencies and seed demo data</span><br>
+      <span class="cmd">npm install</span><br>
+      <span class="cmd">npm run seed</span><br><br>
+      <span class="comment"># Start in demo mode (scheduler runs every 10 seconds)</span><br>
+      <span class="cmd">DEMO_MODE=true npm run dev</span><br><br>
+      <span class="comment"># Open dashboard</span><br>
+      <span class="cmd">open http://localhost:3000</span>
+    </div>
+
+    <h3>Demo Script</h3>
+
+    <p><strong>Act 1 — Show the Dashboard (2 min)</strong></p>
+    <ul class="check-list">
+      <li>Point out the 5 key metrics at the top — especially "At-Risk Clients"</li>
+      <li>Click on an at-risk client to show their profile and session gap</li>
+      <li>Show the follow-up activity feed — emails already sent automatically</li>
+      <li>Click an email preview link to show the actual branded email</li>
+    </ul>
+
+    <p style="margin-top: 20px;"><strong>Act 2 — Demonstrate Time Acceleration (3 min)</strong></p>
+    <ul class="check-list">
+      <li>Go to the Demo Controls section</li>
+      <li>Click "Advance +3 Days" — watch new clients become at-risk</li>
+      <li>Click "Trigger Retention Check" — watch emails fire in real-time</li>
+      <li>Show the follow-up feed updating with new sent emails</li>
+      <li>Click an email preview to show the personalized content and booking link</li>
+    </ul>
+
+    <p style="margin-top: 20px;"><strong>Act 3 — Show the Booking Flow (2 min)</strong></p>
+    <ul class="check-list">
+      <li>Copy a booking link from an email preview</li>
+      <li>Open it in a new tab — show the branded booking page</li>
+      <li>Select a date and session type, click "Confirm Booking"</li>
+      <li>Return to dashboard — show the client is now active again</li>
+    </ul>
+
+    <p style="margin-top: 20px;"><strong>Act 4 — Studio Owner Actions (1 min)</strong></p>
+    <ul class="check-list">
+      <li>Add a new client using the "Add Client" button</li>
+      <li>Record a session for an existing client</li>
+      <li>Toggle a retention rule on/off</li>
+      <li>Show how everything updates in real-time</li>
+    </ul>
+  </div>
+
+  <!-- ==================== SECTION 9: TECH STACK ==================== -->
+  <div class="page">
+    <h2>9. Tech Stack & Setup</h2>
+    <p class="section-desc">Production-ready technologies with zero external dependencies</p>
+
+    <h3>Technology Choices</h3>
+    <table>
+      <tr><th>Component</th><th>Technology</th><th>Why</th></tr>
+      <tr>
+        <td>Runtime</td>
+        <td>Node.js 20+</td>
+        <td>Fast, widely supported, great for I/O-heavy workloads</td>
+      </tr>
+      <tr>
+        <td>Web Framework</td>
+        <td>Express.js</td>
+        <td>Industry standard, minimal overhead, huge ecosystem</td>
+      </tr>
+      <tr>
+        <td>Database</td>
+        <td>SQLite (better-sqlite3)</td>
+        <td>Zero config, portable, synchronous API, perfect for single-server</td>
+      </tr>
+      <tr>
+        <td>Email</td>
+        <td>Nodemailer + Ethereal</td>
+        <td>Real SMTP delivery in production; test accounts for demo</td>
+      </tr>
+      <tr>
+        <td>Scheduler</td>
+        <td>node-cron</td>
+        <td>Lightweight, in-process cron for recurring retention checks</td>
+      </tr>
+      <tr>
+        <td>Frontend</td>
+        <td>Tailwind CSS + Vanilla JS</td>
+        <td>No build step, fast loading, professional UI out of the box</td>
+      </tr>
+      <tr>
+        <td>Booking Tokens</td>
+        <td>UUID v4</td>
+        <td>Cryptographically random, collision-proof, URL-safe</td>
+      </tr>
+    </table>
+
+    <h3>Quick Start</h3>
+    <div class="code-block">
+      <span class="comment"># Clone the repository</span><br>
+      <span class="cmd">git clone</span> https://github.com/98soumithr/client-retention-fitness.git<br>
+      <span class="cmd">cd</span> client-retention-fitness<br><br>
+      <span class="comment"># Install dependencies</span><br>
+      <span class="cmd">npm install</span><br><br>
+      <span class="comment"># Seed demo data (15 clients, 149 sessions, 4 rules, 4 templates)</span><br>
+      <span class="cmd">npm run seed</span><br><br>
+      <span class="comment"># Start the server</span><br>
+      <span class="cmd">npm run dev</span><br><br>
+      <span class="comment"># Open in browser</span><br>
+      <span class="cmd">open</span> http://localhost:3000
+    </div>
+
+    <h3>Environment Variables</h3>
+    <table>
+      <tr><th>Variable</th><th>Default</th><th>Description</th></tr>
+      <tr><td>PORT</td><td>3000</td><td>Server port</td></tr>
+      <tr><td>BASE_URL</td><td>http://localhost:3000</td><td>Base URL for booking links</td></tr>
+      <tr><td>DEMO_MODE</td><td>false</td><td>Enable 10-second scheduler interval</td></tr>
+    </table>
+  </div>
+
+  <!-- ==================== SECTION 10: ROADMAP ==================== -->
+  <div class="page">
+    <h2>10. Future Roadmap</h2>
+    <p class="section-desc">Where this system can grow</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">&#x1F4F1;</div>
+        <h4>SMS Notifications</h4>
+        <p>Add Twilio integration for SMS follow-ups alongside email, with preference management per client.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#x1F916;</div>
+        <h4>AI-Powered Timing</h4>
+        <p>Machine learning model to predict optimal follow-up timing per client based on historical patterns.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#x1F4B3;</div>
+        <h4>Payment Integration</h4>
+        <p>Stripe integration so booking links can also collect payment for paid sessions or packages.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#x1F4C5;</div>
+        <h4>Calendar Sync</h4>
+        <p>Google Calendar / Outlook integration to add confirmed bookings directly to client calendars.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#x1F4F2;</div>
+        <h4>Mobile App</h4>
+        <p>React Native companion app for studio owners to manage retention on the go.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#x1F310;</div>
+        <h4>Multi-Location</h4>
+        <p>Support for franchise/multi-location studios with per-location rules and dashboards.</p>
+      </div>
+    </div>
+
+    <div class="highlight" style="margin-top: 32px;">
+      <p>
+        <strong>This is a fully functional v1.0</strong> — it works today, handles real email delivery,
+        and provides a complete demo experience. The roadmap items above are enhancements that can be
+        added incrementally as the product grows.
+      </p>
+    </div>
+
+    <div style="text-align: center; margin-top: 60px; padding: 40px; background: var(--gray-50); border-radius: 16px;">
+      <p style="font-size: 24px; font-weight: 700; color: var(--dark); margin-bottom: 8px;">
+        Ready to retain more clients?
+      </p>
+      <p style="font-size: 16px; color: var(--gray-500); margin-bottom: 20px;">
+        github.com/98soumithr/client-retention-fitness
+      </p>
+      <p style="font-size: 13px; color: var(--gray-500);">
+        Built with Node.js, Express, SQLite &bull; March 2026
+      </p>
+    </div>
+  </div>
+
+</body>
+</html>
