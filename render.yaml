@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: client-retention-fitness
+    runtime: node
+    buildCommand: npm install && npm run seed
+    startCommand: DEMO_MODE=true node src/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DEMO_MODE
+        value: "true"
