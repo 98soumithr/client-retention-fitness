@@ -9,3 +9,5 @@ services:
         value: production
       - key: DEMO_MODE
         value: "true"
+      - key: BASE_URL
+        value: https://client-retention-fitness.onrender.com
